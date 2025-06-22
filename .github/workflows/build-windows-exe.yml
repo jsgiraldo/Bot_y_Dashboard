@@ -1,0 +1,52 @@
+# build-windows-exe.yml (Versión para archivos en la raíz del repositorio)
+# Compila el bot en un ejecutable de Windows.
+
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Paso 1: Descargar tu código (ahora en la raíz) a la máquina de Windows.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Paso 2: Configurar Python.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Paso 3: Instalar las dependencias de Python desde tu requirements.txt.
+      # ¡Simplificado! Ya no necesitamos especificar la ruta a la carpeta.
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # Paso 4: Instalar los navegadores de Playwright.
+      - name: Install Playwright browsers
+        run: python -m playwright install
+
+      # Paso 5: Instalar PyInstaller.
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+      
+      # Paso 6: Compilar el ejecutable.
+      # ¡Simplificado! Todos los archivos están en la raíz, así que ejecutamos
+      # el comando directamente, sin 'cd'.
+      - name: Build Windows executable
+        run: pyinstaller --onefile --name bot_energia_playwright --add-data "$(python get_playwright_path.py):ms-playwright" bot_playwright.py
+        shell: bash
+
+      # Paso 7: Subir el .exe compilado.
+      # ¡Simplificado! La ruta al ejecutable es ahora más directa.
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-executable
+          path: dist/bot_energia_playwright.exe
